@@ -1,15 +1,9 @@
 #!/usr/bin/env bash
-# Install nginx and configure a 301 redirect
+# Install nginx and configure a 301 redirect from /redirect_me
 
 sudo apt-get -y update
 sudo apt-get -y install nginx
 
-# Replace the default location block with a redirect using sed
-sudo sed -i '/location \/ {/a\
-	location /redirect_me {\
-		return 301 https://www.youtube.com/watch;\
-	}\
-' /etc/nginx/sites-available/default
+sudo sed -i "/location \/ {/a location /redirect_me { return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4; }" /etc/nginx/sites-available/default
 
-# restart nginx
 sudo service nginx restart
