@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Configures Nginx to add custom HTTP header
+# shellcheck disable=SC2154
+
+sudo apt-get update -y
+sudo apt-get install -y nginx
+
+# Add the custom header globally in the http block
+# This ensures it works regardless of the default file structure
+sudo sed -i "/http {/a \    add_header X-Served-By \$hostname;" /etc/nginx/nginx.conf
+
+# Test and restart
+sudo nginx -t && sudo systemctl restart nginx
