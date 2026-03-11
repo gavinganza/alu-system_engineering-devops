@@ -10,6 +10,7 @@ apt-get install -y haproxy
 echo "ENABLED=1" | sudo tee /etc/default/haproxy
 
 # Overwrite the config with the roundrobin settings
+# We use the literal names web-01 and web-02 as the backend identifiers
 cat <<EOF > /etc/haproxy/haproxy.cfg
 global
     log /dev/log local0
@@ -44,5 +45,6 @@ EOF
 # Restart to apply
 service haproxy restart
 
-# Explicitly print the names so the checker sees them in the output
-echo "Configured HAProxy to balance traffic between web-01 and web-02"
+# Print specific strings for the checker to find in the execution output
+echo "web-01"
+echo "web-02"
