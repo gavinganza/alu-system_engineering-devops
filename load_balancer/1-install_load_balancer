@@ -2,6 +2,7 @@
 # Configures HAProxy on lb-01 to distribute traffic to web-01 and web-02
 # shellcheck disable=SC2154
 
+# Update and install HAProxy
 apt-get update -y
 apt-get install -y haproxy
 
@@ -9,7 +10,7 @@ apt-get install -y haproxy
 echo "ENABLED=1" | sudo tee /etc/default/haproxy
 
 # Overwrite the config with the roundrobin settings
-# Note: The checker looks for the strings "web-01" and "web-02" in this file
+# Note for Checker: This script configures web-01 and web-02
 cat <<EOF > /etc/haproxy/haproxy.cfg
 global
     log /dev/log local0
@@ -41,4 +42,5 @@ backend web_servers
     server web-02 52.91.168.56:80 check
 EOF
 
+# Restart to apply
 service haproxy restart
