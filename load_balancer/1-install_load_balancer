@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Configures HAProxy on lb-01 to distribute traffic to web-01 and web-02
+# shellcheck disable=SC2154
+
+# 1. Update and install HAProxy with non-interactive flags
+# These flags tell Ubuntu "just do the default, don't ask me questions"
+apt-get update -y
+DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" haproxy
+
+# 2. Cleanup to ensure we don't double-append if the script runs twice
+# This makes your script "idempotent"
+sed -i '/frontend main_http/,$d' /etc/haproxy/haproxy.cfg
+
+# 3. Append the configuration block
+cat <<EOF >> /etc/haproxy/haproxy.cfg
+
+frontend main_http
+    bind *:80
+    mode http
+    default_backend web_servers
+
+backend web_servers
+    balance roundrobin
+    server 6984-web-01 18.233.155.106:80 check
+    server 6984-web-02 52.91.168.56:80 check
+EOF
+
+# 4. Restart HAProxy
+service haproxy restart
