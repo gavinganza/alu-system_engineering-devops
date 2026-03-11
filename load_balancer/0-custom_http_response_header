@@ -2,12 +2,17 @@
 # Configures Nginx to add custom HTTP header
 # shellcheck disable=SC2154
 
-sudo apt-get update -y
-sudo apt-get install -y nginx
+apt-get update -y
+apt-get install -y nginx
 
-# Add the custom header globally in the http block
-# This ensures it works regardless of the default file structure
-sudo sed -i "/http {/a \    add_header X-Served-By \$hostname;" /etc/nginx/nginx.conf
+# 1. Complete cleanup of any previous attempts
+sudo sed -i '/X-Served-By/d' /etc/nginx/sites-available/default
+sudo sed -i '/X-Served-By/d' /etc/nginx/nginx.conf
 
-# Test and restart
-sudo nginx -t && sudo systemctl restart nginx
+# 2. Add the header to the Nginx config file specifically in the http block
+# We use the line 'include /etc/nginx/sites-enabled/*;' as our anchor 
+# because it's present in 100% of standard Ubuntu Nginx installs.
+sudo sed -i '/include \/etc\/nginx\/sites-enabled\/\*;/a \    add_header X-Served-By $hostname;' /etc/nginx/nginx.conf
+
+# 3. Test and Restart
+sudo nginx -t && sudo service nginx restart
