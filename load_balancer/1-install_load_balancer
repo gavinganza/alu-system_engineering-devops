@@ -1,50 +1,24 @@
 #!/usr/bin/env bash
-# Configures HAProxy on lb-01 to distribute traffic to web-01 and web-02
-# shellcheck disable=SC2154
+# Installs and configures HAProxy on a new Ubuntu machine
+# to distribute traffic to web-01 and web-02 using roundrobin
 
-# Update and install HAProxy
-apt-get update -y
-apt-get install -y haproxy
+sudo apt-get update
+sudo apt-get -y install haproxy
 
-# Requirement: Make sure HAProxy can be managed via init script
-echo "ENABLED=1" | sudo tee /etc/default/haproxy
+# Enable HAProxy to be managed via init script
+sudo sed -i 's/ENABLED=0/ENABLED=1/' /etc/default/haproxy
 
-# Overwrite the config with the roundrobin settings
-# We use the literal names web-01 and web-02 as the backend identifiers
-cat <<EOF > /etc/haproxy/haproxy.cfg
-global
-    log /dev/log local0
-    log /dev/log local1 notice
-    chroot /var/lib/haproxy
-    stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners
-    stats timeout 30s
-    user haproxy
-    group haproxy
-    daemon
+# Configure HAProxy frontend and backend
+sudo tee -a /etc/haproxy/haproxy.cfg > /dev/null <<EOF
 
-defaults
-    log     global
-    mode    http
-    option  httplog
-    option  dontlognull
-    timeout connect 5000
-    timeout client  50000
-    timeout server  50000
-
-frontend main_http
+frontend 6984_frontend
     bind *:80
-    mode http
-    default_backend web_servers
+    default_backend 6984_backend
 
-backend web_servers
+backend 6984_backend
     balance roundrobin
-    server web-01 18.233.155.106:80 check
-    server web-02 52.91.168.56:80 check
+    server 6984-web-01 18.233.155.106:80 check
+    server 6984-web-02 52.91.168.56:80 check
 EOF
 
-# Restart to apply
-service haproxy restart
-
-# Print specific strings for the checker to find in the execution output
-echo "web-01"
-echo "web-02"
+sudo service haproxy restart
